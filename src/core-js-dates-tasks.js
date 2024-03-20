@@ -19,6 +19,7 @@
  */
 function dateToTimestamp(date) {
   const inputData = new Date(date);
+
   return inputData.getTime();
 }
 
@@ -35,13 +36,17 @@ function dateToTimestamp(date) {
 
 function addZero(date) {
   return date.toString().padStart(2, '0');
+
   // return date.toString().length > 1 ? date : `${0}${date}`;
 }
 
 function getTime(date) {
   const hour = addZero(date.getHours());
+
   const minute = addZero(date.getMinutes());
+
   const sec = addZero(date.getSeconds());
+
   return `${hour}:${minute}:${sec}`;
 }
 
@@ -71,8 +76,16 @@ function getDayName(date) {
  * Date('2024-02-13T00:00:00Z') => Date('2024-02-16T00:00:00Z')
  * Date('2024-02-16T00:00:00Z') => Date('2024-02-23T00:00:00Z')
  */
-function getNextFriday(/* date */) {
-  throw new Error('Not implemented');
+function getNextFriday(date) {
+  const dayOfWeek = date.getDay();
+
+  const daysToFriday = dayOfWeek < 5 ? 5 - dayOfWeek : 7 - dayOfWeek + 5;
+
+  const nextFriday = new Date(date);
+
+  nextFriday.setDate(date.getDate() + daysToFriday);
+
+  return nextFriday;
 }
 
 /**
@@ -101,8 +114,24 @@ function getCountDaysInMonth(month, year) {
  * '2024-02-01T00:00:00.000Z', '2024-02-02T00:00:00.000Z'  => 2
  * '2024-02-01T00:00:00.000Z', '2024-02-12T00:00:00.000Z'  => 12
  */
-function getCountDaysOnPeriod(/* dateStart, dateEnd */) {
-  throw new Error('Not implemented');
+function getCountDaysOnPeriod(dateStart, dateEnd) {
+  const start = new Date(dateStart);
+
+  const startUTC = Date.UTC(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate()
+  );
+
+  const end = new Date(dateEnd);
+
+  const endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+
+  const millisecondsInDay = 1000 * 60 * 60 * 24;
+
+  const totalDays = Math.floor((endUTC - startUTC) / millisecondsInDay) + 1;
+
+  return totalDays;
 }
 
 /**
@@ -122,8 +151,14 @@ function getCountDaysOnPeriod(/* dateStart, dateEnd */) {
  * '2024-02-02', { start: '2024-02-02', end: '2024-03-02' } => true
  * '2024-02-10', { start: '2024-02-02', end: '2024-03-02' } => true
  */
-function isDateInPeriod(/* date, period */) {
-  throw new Error('Not implemented');
+function isDateInPeriod(date, period) {
+  const dates = new Date(date).getTime();
+
+  const periodStart = new Date(period.start).getTime();
+
+  const periodEnd = new Date(period.end).getTime();
+
+  return periodStart <= dates && dates <= periodEnd;
 }
 
 /**
@@ -139,21 +174,24 @@ function isDateInPeriod(/* date, period */) {
  */
 function formatDate(date) {
   const currentDate = new Date(date);
-  return currentDate.toLocaleString('en-US');
-
-  // const options = {
-  //   month: 'numeric',
-  //   day: 'numeric',
-  //   year: 'numeric',
-  //   hour: 'numeric',
-  //   minute: 'numeric',
-  //   second: 'numeric',
-  //   hour12: true,
-  // };
-  // return currentDate.toLocaleString('en-US', options);
-
-  // return `${currentDate.toLocaleDateString('en-US')}, ${currentDate.toLocaleTimeString('en-US')}`;
+  return currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
 }
+
+/* .................solution two.......................
+
+  const options = {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true,
+    timeZone: 'UTC',
+  };
+  return currentDate.toLocaleString('en-US', options);
+
+*/
 
 /**
  * Returns the total number of weekend days (Saturdays and Sundays) in a specified month and year.
@@ -168,17 +206,17 @@ function formatDate(date) {
  * 1, 2024 => 8
  */
 function getCountWeekendsInMonth(month, year) {
-  const lastDayOfMonth = new Date(month, year, 0).getDate();
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
   let countWeekends = 0;
 
   for (let day = lastDayOfMonth; day > 0; day -= 1) {
-    const currentDay = new Date(month, year, day).getDay();
+    const currentDay = new Date(year, month - 1, day).getDay();
 
     if (currentDay === 0 || currentDay === 6) {
-      // countWeekends += `, ${new Date(month, year, day).getDate()}`;
       countWeekends += 1;
     }
   }
+
   return countWeekends;
 }
 
